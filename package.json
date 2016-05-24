@@ -8,10 +8,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/alfresco/alfresco-bot.git"
+    "url": "https://github.com/eromano/alfresco-bot.git"
   },
   "bugs": {
-    "url": "https://github.com/alfresco/alfresco-bot/issues"
+    "url": "https://github.com/eromano/alfresco-bot/issues"
   },
   "scripts": {
     "start": "node src/main.js",

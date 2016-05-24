@@ -1,15 +1,15 @@
 <h1 align="center">Alfresco Bot</h1>
 <p align="center">
     <a title='Build Status' href="https://travis-ci.org/alfresco/alfresco-bot">
-        <img src='https://travis-ci.org/alfresco/alfresco-bot.svg?branch=master' alt='travis Status' />
+        <img src='https://travis-ci.org/eromano/alfresco-bot.svg?branch=master' alt='travis Status' />
     </a>
     <a title='coveralls Status' href='https://coveralls.io/r/alfresco/alfresco-bot'>
-        <img src='https://img.shields.io/coveralls/alfresco/alfresco-bot.svg' alt='Coverage Status' />
+        <img src='https://img.shields.io/coveralls/eromano/alfresco-bot.svg' alt='Coverage Status' />
     </a>
 </p>
 <p align="center">
     <a title='closed issue' href='http://issuestats.com/github/alfresco/alfresco-bot'>
-        <img src='http://issuestats.com/github/alfresco/alfresco-bot/badge/issue' alt='issue stats' />
+        <img src='http://issuestats.com/github/eromano/alfresco-bot/badge/issue' alt='issue stats' />
     </a>
     <a title='blog' href='http://eromano.github.io/'>
        <img src='https://img.shields.io/badge/style-blog-blue.svg?label=my' alt='blog' />
