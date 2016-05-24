@@ -1,6 +1,6 @@
 /*global describe, it, beforeEach, afterEach */
 'use strict';
-var  AlfrescoBot = require('../src/AlfrescoBot');
+var  AlfrescoBot = require('../src/alfrescoBot');
 
 var expect = require('chai').expect;
 var sinon = require('sinon');
