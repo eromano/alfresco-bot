@@ -84,5 +84,5 @@ For detailed changelog, check [Releases](https://github.com/alfresco/alfresco-bo
 
 Contributor | GitHub profile |
 --- | --- | ---
-Eugenio Romano  (Creator) | [alfresco](https://github.com/alfresco) |
+Eugenio Romano  (Creator) | [eromano](https://github.com/eromano) |
 
