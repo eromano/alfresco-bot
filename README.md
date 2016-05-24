@@ -1,4 +1,4 @@
-<h1 align="center">alfresco-bot</h1>
+<h1 align="center">Alfresco Bot</h1>
 <p align="center">
     <a title='Build Status' href="https://travis-ci.org/alfresco/alfresco-bot">
         <img src='https://travis-ci.org/alfresco/alfresco-bot.svg?branch=master' alt='travis Status' />
