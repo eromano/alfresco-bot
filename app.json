@@ -1,0 +1,15 @@
+{
+  "keywords": [
+    "alfresco",
+    "slack",
+    "bot"
+  ],
+  "name": "alfresco-bot",
+  "description": "Alfresco Bot able to do live search",
+  "repository": "https://github.com/alfresco/alfresco-bot.git",
+  "env": {
+    "TOKEN_SLACK": {
+      "description": "Your Slack bot integration token (obtainable at https://my.slack.com/services/new/bot)"
+    }
+  }
+}
