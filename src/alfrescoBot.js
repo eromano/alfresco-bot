@@ -13,117 +13,135 @@ class AlfrescoBot {
      * @param {String} alfrescoShareIp Your share server IP or DNS name
      */
     constructor(slackToken, alfrescoShareIp) {
-      assert(slackToken, 'Slack Token is necessary obtain it at https://my.slack.com/services/new/bot and copy in configBot.json');
-      assert(alfrescoShareIp, 'alfrescoShareIp is missing,  Your share server IP or DNS name is necessary add it in  configBot.json');
+        assert(slackToken, 'Slack Token is necessary obtain it at https://my.slack.com/services/new/bot and copy in configBot.json');
+        assert(alfrescoShareIp, 'alfrescoShareIp is missing,  Your share server IP or DNS name is necessary add it in  configBot.json');
 
-      var settingsBot = {
-        token: slackToken,
-        name: 'alfresco-bot'
-      };
+        var settingsBot = {
+            token: slackToken,
+            name: 'alfresco-bot'
+        };
 
-      this.bot = new Bot(settingsBot);
+        this.bot = new Bot(settingsBot);
 
-      this.alfrescoApi = new AlfrescoApi('admin', 'admin', alfrescoShareIp);
+        this.alfrescoApi = new AlfrescoApi('admin', 'admin', alfrescoShareIp);
     }
 
     run() {
-      this._startChannelMessageListner();
-      this._listenerFolderRequest();
-      this._listenerFolderRootRequest();
-      this._listenerCommandListMessage();
+        this._startChannelMessageListener();
+        this._listenerFolderRequest();
+        this._listenerFolderRootRequest();
+        this._listenerCommandListMessage();
+        this._listenerMoveFolder();
     }
 
     /**
      * Post a message in any channel where the bot is present at Start
      */
-    _startChannelMessageListner() {
-      this.bot.on('start', (function () {
-        var message = 'Hello I am alfresco-bot';
-        var fallBack = 'alfresco-bot is here';
-        var color = 'warning';
-        var title = 'alfresco-bot greetings';
-        var titleLink = 'Hello I am alfresco-bot';
+    _startChannelMessageListener() {
+        this.bot.on('start', (function () {
+            var message = 'Hello I am alfresco-bot';
+            var fallBack = 'alfresco-bot is here';
+            var color = 'warning';
+            var title = 'alfresco-bot greetings';
+            var titleLink = 'Hello I am alfresco-bot';
 
-        this.postSlackMessage(message, fallBack, color, null, title, titleLink, 'general');
-      }).bind(this));
+            this.postSlackMessage(message, fallBack, color, null, title, titleLink, 'general');
+        }).bind(this));
     }
 
     /**
-     * Listner for request command list root
+     * Listener for request command list root
      */
     _listenerFolderRootRequest() {
-      this._listenerMessage(this.isFileAndFolderRootMessage, () => {
-        this.alfrescoApi.getFoldersFileRoot().then((result)=> {
-          var nodes = _.map(result.objects, 'object');
+        this._listenerMessage(this.isFileAndFolderRootMessage, () => {
+            this.alfrescoApi.getFoldersFileRoot().then((result)=> {
+                var nodes = _.map(result, 'entry');
 
-          var message = '';
-          nodes.forEach((node)=> {
-            var path = node.properties.hasOwnProperty('cmis:path') ? node.properties['cmis:path'].value : '';
-            var name = node.properties.hasOwnProperty('cmis:name') ? node.properties['cmis:name'].value : '';
+                var message = '';
+                nodes.forEach((node)=> {
 
-            var nodeRef = node.properties.hasOwnProperty('alfcmis:nodeRef') ? node.properties['alfcmis:nodeRef'].value : '';
-            var url = this.alfrescoApi.getContentUrl(nodeRef);
+                    var path = node.path ? node.path : '';
+                    var name = node.name ? node.name : '';
 
-            message += '* ' + this._icon(node.properties) + ' ' + slackMessageAnalyzer.createSlackMessageLink(name, url) + '  ' + path + '\n';
-          });
+                    var nodeRef = '';
+                    var url = this.alfrescoApi.getContentUrl(nodeRef);
 
-          var fallBack = 'List Folder and File';
-          var color = 'warning';
-          var title = 'List Folder and File';
+                    message += '* ' + this._icon(node) + ' ' + slackMessageAnalyzer.createSlackMessageLink(name, url) + '\n';
+                });
 
-          this.postSlackMessage(message, fallBack, color, null, title, '', 'general');
+                var fallBack = 'List Folder and File';
+                var color = 'warning';
+                var title = 'List Folder and File';
+
+                this.postSlackMessage(message, fallBack, color, null, title, '', 'general');
+            }, this.handleErrorFolder);
         });
-      });
     }
 
     /**
-     * Listner for request command dir
+     * Listener for request command dir
      */
     _listenerFolderRequest() {
-      this._listenerMessage(this.isFileAndFolderMessage, (message) => {
+        this._listenerMessage(this.isFileAndFolderMessage, (message) => {
 
-        var folderName = slackMessageAnalyzer.getFolderNameInMessageFromText(message.text, 'dir');
+            var folderName = slackMessageAnalyzer.getFolderNameInMessageFromText(message.text, 'dir') || slackMessageAnalyzer.getFolderNameInMessageFromText(message.text, 'ls');
 
-        this.alfrescoApi.getListByFolder(folderName).then((result)=> {
-          var nodes = _.map(result.objects, 'object');
+            if (folderName) {
+                this.alfrescoApi.getListByFolder(folderName).then((this.showFolder).bind(this), this.handleErrorFolder);
+            } else {
+                this.alfrescoApi.getCurrentFolder().then((this.showFolder).bind(this), this.handleErrorFolder);
+            }
 
-          var message = '';
-          nodes.forEach((node)=> {
-            var path = node.properties.hasOwnProperty('cmis:path') ? node.properties['cmis:path'].value : '';
-            var name = node.properties.hasOwnProperty('cmis:name') ? node.properties['cmis:name'].value : '';
-            var nodeRef = node.properties.hasOwnProperty('alfcmis:nodeRef') ? node.properties['alfcmis:nodeRef'].value : '';
+        });
+    }
+
+    _listenerMoveFolder() {
+        this._listenerMessage(this.isMoveFodlerMessage, (message) => {
+            var folderName = slackMessageAnalyzer.getFolderNameInMessageFromText(message.text, 'cd');
+            this.alfrescoApi.moveFolder(folderName).then((this.showFolder).bind(this), this.handleErrorFolder);
+        });
+    }
+
+    handleErrorFolder() {
+        var fallBack = 'List Folder and File';
+        var color = 'warning';
+        var title = 'List Folder and File';
+
+        this.postSlackMessage('Folder Not found', fallBack, color, null, title, '', 'general');
+    }
+
+    showFolder(folderEntries) {
+        var nodes = _.map(folderEntries, 'entry');
+
+        var message = '';
+        nodes.forEach((node)=> {
+            var path = node.path ? node.path : '';
+            var name = node.name ? node.name : '';
+            var nodeRef = '';
             var url = this.alfrescoApi.getContentUrl(nodeRef);
 
-            message += '* ' + this._icon(node.properties) + ' ' + slackMessageAnalyzer.createSlackMessageLink(name, url) + '  ' + path + '\n';
-          });
-
-          if (nodes.length === 0) {
-            message = 'The folder is empty';
-          }
-
-          var fallBack = 'List Folder and File' + folderName;
-          var color = 'warning';
-          var title = 'List Folder and File' + folderName;
-
-          this.postSlackMessage(message, fallBack, color, null, title, '', 'general');
-        }, ()=> {
-          var fallBack = 'List Folder and File' + folderName;
-          var color = 'warning';
-          var title = 'List Folder and File' + folderName;
-
-          this.postSlackMessage('Folder Not found', fallBack, color, null, title, '', 'general');
+            message += '* ' + this._icon(node) + ' ' + slackMessageAnalyzer.createSlackMessageLink(name, url) + '\n';
         });
-      });
+
+        if (nodes.length === 0) {
+            message = 'The folder is empty';
+        }
+
+        var fallBack = 'List Folder and File';
+        var color = 'warning';
+        var title = 'List Folder and File';
+
+        this.postSlackMessage(message, fallBack, color, null, title, '', 'general');
     }
 
     /**
      * Post a message on slack with the command list when the bot is asked about it
      */
     _listenerCommandListMessage() {
-      this._listenerMessage(this.isCommandListMessage, () => {
-        this.postSlackMessage('This is the command list \n • dir "nameFolder"  \n • list root \n • help ', 'Command list',
-            this.infoColor, null, 'Command list', '', 'general');
-      });
+        this._listenerMessage(this.isCommandListMessage, () => {
+            this.postSlackMessage('This is the command list \n • dir "nameFolder" \n • cd "nameFolder"  \n • list root \n • help ', 'Command list',
+                this.infoColor, null, 'Command list', '', 'general');
+        });
     }
 
     /**
@@ -132,7 +150,7 @@ class AlfrescoBot {
      * @param {String} textMessage to analyze
      */
     isCommandListMessage(textMessage) {
-      return slackMessageAnalyzer.isTextContainedInMessage(textMessage, 'help');
+        return slackMessageAnalyzer.isTextContainedInMessage(textMessage, 'help');
     }
 
     /**
@@ -141,16 +159,25 @@ class AlfrescoBot {
      * @param {String} textMessage to analyze
      */
     isFileAndFolderRootMessage(textMessage) {
-      return slackMessageAnalyzer.isTextContainedInMessage(textMessage, 'list root');
+        return slackMessageAnalyzer.isTextContainedInMessage(textMessage, 'list root');
     }
 
     /**
-     * recognize if in the message is present the command "dir"
+     * recognize if in the message is present the command "dir" or ls
      *
      * @param {String} textMessage to analyze
      */
     isFileAndFolderMessage(textMessage) {
-      return slackMessageAnalyzer.isTextContainedInMessage(textMessage, 'dir');
+        return slackMessageAnalyzer.isTextContainedInMessage(textMessage, 'dir') || slackMessageAnalyzer.isTextContainedInMessage(textMessage, 'ls');
+    }
+
+    /**
+     * recognize if in the message is present the command "cd"
+     *
+     * @param {String} textMessage to analyze
+     */
+    isMoveFodlerMessage(textMessage) {
+        return slackMessageAnalyzer.isTextContainedInMessage(textMessage, 'cd');
     }
 
     /**
@@ -165,22 +192,22 @@ class AlfrescoBot {
      * @param {String} nameChannelOrUser where posts a message  channel | group | user by name,
      */
     postSlackMessage(message, fallback, color, fields, title, titleLink, nameChannelOrUser) {
-      var params = {
-        as_user: true,
-        attachments: [
+        var params = {
+            as_user: true,
+            attachments: [
                 {
-                  'fallback': fallback,
-                  'color': color || this.infoColor,
-                  'title': title ? title : 'alfresco-bot',
-                  'title_link': titleLink,
-                  'text': message,
-                  'fields': fields,
-                  'mrkdwn_in': ['text', 'pretext']
+                    'fallback': fallback,
+                    'color': color || this.infoColor,
+                    'title': title ? title : 'alfresco-bot',
+                    'title_link': titleLink,
+                    'text': message,
+                    'fields': fields,
+                    'mrkdwn_in': ['text', 'pretext']
                 }
             ]
-      };
+        };
 
-      this.bot.postTo(nameChannelOrUser, '', params);
+        this.bot.postTo(nameChannelOrUser, '', params);
     }
 
     /**
@@ -190,23 +217,23 @@ class AlfrescoBot {
      * @param {Function} callback to call if the condition is satisfied
      */
     _listenerMessage(condition, callback) {
-      this.bot.on('message', (message) => {
-        if (condition.call(this, message.text, message.username)) {
-          callback.call(this, message);
+        this.bot.on('message', (message) => {
+            if (condition.call(this, message.text, message.username)) {
+                callback.call(this, message);
+            }
+        });
+    }
+
+    _icon(node) {
+        if (this._isFolder(node)) {
+            return ':file_folder:';
+        } else {
+            return ':notebook:';
         }
-      });
     }
 
-    _icon(properties) {
-      if (this._isFolder(properties)) {
-        return ':file_folder:';
-      } else {
-        return ':notebook:';
-      }
-    }
-
-    _isFolder(properties) {
-      return properties.hasOwnProperty('cmis:path') ? true : false;
+    _isFolder(node) {
+        return node.isFolder ? true : false;
     }
 }
 

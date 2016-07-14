@@ -1,8 +1,9 @@
 'use strict';
 
-var alfrescoApiClient = require('alfresco-api-client');
+var AlfrescoApi = require('alfresco-js-api');
+var _ = require('lodash');
 
-class AlfrescoApi {
+class AlfrescoApiExp {
 
     /**
      * @param {String} username
@@ -10,56 +11,95 @@ class AlfrescoApi {
      * @param {String} alfrescoShareIp Your share server IP or DNS name
      */
     constructor(username, password, alfrescoShareIp) {
-      this.alfrescoHost = alfrescoShareIp;
+        this.alfrescoHost = alfrescoShareIp;
 
-      this.config = {
-        host: this.alfrescoHost,
-        user: username,
-        password: password
-      };
+        this.lastQuery = '-root-';
 
-      this._loginAlfresco();
+        this.config = {
+            host: this.alfrescoHost,
+            username: username,
+            password: password
+        };
+
+        this.loginNew();
     }
 
-    _loginAlfresco() {
-      return new Promise((resolve, reject) => {
-        alfrescoApiClient.loginPromise(this.config).then(()=> {
-          resolve();
-        }, ()=> {
-          reject();
+    loginNew() {
+        this.alfrescoJsApi = new AlfrescoApi(this.config);
+
+        this.alfrescoJsApi.on('unauthorized', function () {
+            console.log('You are unauthorized you can use this event to redirect to login');
         });
-      });
+
+        this.alfrescoJsApi.login().then((data)=> {
+            this.getFoldersFileRoot();
+            console.log('login called successfully. Ticket ' + data);
+        }, (error)=> {
+            console.log(error);
+        })
+
     }
 
     getFoldersFileRoot() {
-      return new Promise((resolve, reject) => {
-        alfrescoApiClient.cmisBrowserPromise(null, 'children').then((result) => {
-          resolve(result);
-        }, (err) => {
-          if (err) {
-            reject(new Error(('Alfresco Access Error ' + err)));
-          }
+        return new Promise((resolve, reject) => {
+            this.alfrescoJsApi.nodes.getNodeChildren('-root-', {include: ['path']}).then((data) => {
+                this.lastQuery = data.list.entries;
+                this.lastFolderId = '-root-';
+                resolve(data.list.entries);
+            }, (error) => {
+                if (error) {
+                    reject(new Error(('Alfresco Access Error ' + err)));
+
+                }
+            });
         });
-      });
     }
 
     getListByFolder(folderShortName) {
-      return new Promise((resolve, reject) => {
-        if (folderShortName && folderShortName.indexOf(0, '/') < 0) {
-          folderShortName = '/' + folderShortName;
-        }
+        return new Promise((resolve, reject) => {
+            var dataNode = _.find(this.lastQuery, (data)=> {
+                return data.entry.name && data.entry.name.toUpperCase() === folderShortName.toUpperCase();
+            });
 
-        alfrescoApiClient.cmisBrowserPromise(folderShortName, alfrescoApiClient.CMIS_SELECTOR_CHILDREN).then(function (result) {
-          resolve(result);
-        }, () => {
-          reject('Folder not found or not Authorized');
+            this.alfrescoJsApi.nodes.getNodeChildren(dataNode.entry.id, {include: ['path']}).then((data)=> {
+                this.lastQuery = data.list.entries;
+                this.lastFolderId = dataNode.entry.id;
+                resolve(data.list.entries);
+            }, () => {
+                reject('Folder not found or not Authorized');
+            });
         });
-      });
+    }
+
+    getCurrentFolder() {
+        return new Promise((resolve, reject) => {
+            this.alfrescoJsApi.nodes.getNodeChildren(this.lastFolderId, {include: ['path']}).then((data)=> {
+                resolve(data.list.entries);
+            }, () => {
+                reject('Folder not found or not Authorized');
+            });
+        });
+    }
+
+    moveFolder(folderShortName) {
+        return new Promise((resolve, reject) => {
+            var dataNode = _.find(this.lastQuery, (data)=> {
+                return data.entry.name && data.entry.name.toUpperCase() === folderShortName.toUpperCase();
+            });
+
+            this.alfrescoJsApi.nodes.getNodeChildren(dataNode.entry.id, {include: ['path']}).then((data) => {
+                this.lastQuery = data.list.entries;
+                this.lastFolderId = dataNode.entry.id;
+                resolve(data.list.entries);
+            }, () => {
+                reject('Folder not found or not Authorized');
+            });
+        });
     }
 
     getContentUrl(url) {
-      return this.alfrescoHost + 'share/page/context/mine/document-details?nodeRef=' + url;
+        return this.alfrescoHost + 'share/page/context/mine/document-details?nodeRef=' + url;
     }
 }
 
-module.exports = AlfrescoApi;
+module.exports = AlfrescoApiExp;
