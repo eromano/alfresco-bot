@@ -1,6 +1,6 @@
 <h1 align="center">Alfresco Bot</h1>
 <p align="center">
-    <a title='Build Status' href="https://travis-ci.org/alfresco/alfresco-bot">
+    <a title='Build Status' href="https://travis-ci.org/eromano/alfresco-bot">
         <img src='https://travis-ci.org/eromano/alfresco-bot.svg?branch=master' alt='travis Status' />
     </a>
     <a title='coveralls Status' href='https://coveralls.io/r/alfresco/alfresco-bot'>
@@ -18,18 +18,39 @@
 
 ## About alfresco-bot
 >alfresco-bot is a  node.js slack bot.
-Alfresco Bot able to do live search and communicate with alfresco share
+Alfresco Bot able to do live search and communicate with alfresco ECM using the [Alfresco JS Api](https://github.com/Alfresco/alfresco-js-api)
 
-## Getting Started
+<!-- markdown-toc start - Don't edit this section.  npm run toc to generate it-->
+
+<!-- toc -->
+
+- [Deploy on Heroku](#deploy-on-heroku)
+  * [One-Click Heroku](#one-click-heroku)
+  * [Manual Heroku](#manual-heroku)
+- [Command list](#command-list)
+- [Development](#development)
+- [Contributing](#contributing)
+- [History](#history)
+  * [Contributors](#contributors)
+
+<!-- tocstop -->
+
+<!-- markdown-toc end -->
+
+
+![Example](assets/bot_example1.png)
+
+
+## Deploy on Heroku
 1. Create a new [bot integration](https://my.slack.com/services/new/bot)
 1. Choose between **One-Click Heroku** or **Manual Heroku**
 
- - **One-Click Heroku**
+### One-Click Heroku
        Click this button:
 
        [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
- - **Manual Heroku**
+### Manual Heroku
     *  Install [Heroku toolbelt](https://devcenter.heroku.com/articles/getting-started-with-nodejs#set-up)
     * Create a new bot integration (as above)
     *  `heroku create`

@@ -43,7 +43,7 @@ describe('Alfresco bot command', function () {
     });
 
     setTimeout(()=> {
-      expect(this.textCheck).to.be.equal('This is the command list \n • dir "nameFolder"  \n • list root \n • help ');
+      expect(this.textCheck).to.be.equal('This is the command list \n • dir "nameFolder" or ls "nameFolder" \n • cd "nameFolder"  \n • list root \n • help ', 'Command list');
       expect(this.colorMessage).to.be.equal(this.alfrescoBot.infoColor);
       done();
     }, 20);
