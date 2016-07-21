@@ -21,7 +21,7 @@
     "toc" : "markdown-toc -i README.md"
   },
   "devDependencies": {
-    "alfresco-js-api": "^0.2.0",
+    "alfresco-js-api": "^0.2.2",
     "chai": "^3.5.0",
     "grunt": "~0.4.0",
     "grunt-cli": "^1.1.0",
