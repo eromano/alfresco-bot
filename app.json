@@ -10,6 +10,9 @@
   "env": {
     "TOKEN_SLACK": {
       "description": "Your Slack bot integration token (obtainable at https://my.slack.com/services/new/bot)"
+    },
+    "ALFRESCO_HOST": {
+      "description": "Your ECM HOST"
     }
   }
 }
