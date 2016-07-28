@@ -46,9 +46,9 @@ Alfresco Bot able to do live search and communicate with alfresco ECM using the 
 1. Choose between **One-Click Heroku** or **Manual Heroku**
 
 ### One-Click Heroku
-       Click this button:
+Click this button:
 
-       [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
 ### Manual Heroku
     *  Install [Heroku toolbelt](https://devcenter.heroku.com/articles/getting-started-with-nodejs#set-up)
